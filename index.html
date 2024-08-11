@@ -326,7 +326,7 @@
       }
 
       // マップが移動した後に ScenegraphLayer を更新
-      map.on('moveend', () => {
+      map.on('move', () => {
         updateScenegraphLayer();
       });
 
