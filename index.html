@@ -99,7 +99,7 @@
     const lightingEffect = new deck.LightingEffect({ ambientLight });
 
     const DATA_URL = d3.csv("data/position.csv");
-    const MODEL_URL = "data/dji_tello_2.glb";
+    const MODEL_URL = "data/dji_tello_1.glb";
 
     let scenegraphLayer;
 
@@ -281,7 +281,10 @@
         },
         getOrientation: [0, -93, 90],
         scenegraph: MODEL_URL,
-        sizeScale: 7,
+        sizeScale: 2,
+        _animations: {
+          '*': { speed: 1 }
+        },
         _lighting: 'pbr',
         pickable: true,
         opacity: 1,
@@ -307,8 +310,11 @@
           getPosition: () => [center[0], center[1], 135],
           getOrientation: [0, -93, 90],
           scenegraph: MODEL_URL,
-          sizeScale: 7,
+          sizeScale: 2,
           _lighting: 'pbr',
+          _animations: {
+            '*': { speed: 1 }
+          },
           pickable: true,
           opacity: 1,
         });
