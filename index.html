@@ -274,10 +274,6 @@
         id: "scenegraphLayer",
         data: [{}],
         getPosition: () => {
-          /*
-          const center = map.getCenter().toArray();
-          return [center[0], center[1], 150];
-          */
           const center = map.getCenter().toArray();
           const altitude = parseFloat(map.transform.elevation) || 150; // 標高値を数値に変換
           console.log('経度緯度:', center);
@@ -289,7 +285,7 @@
         scenegraph: MODEL_URL,
         sizeScale: 2,
         _animations: {
-          '*': { speed: 1 }
+          '*': { speed: 10 }
         },
         _lighting: 'pbr',
         pickable: true,
@@ -362,7 +358,7 @@
           sizeScale: 2,
           _lighting: 'pbr',
           _animations: {
-            '*': { speed: 1 }
+            '*': { speed: 10 }
           },
           pickable: true,
           opacity: 1,
