@@ -307,6 +307,7 @@
           .then(response => response.json())
           .then(data => {
             const altitude = parseFloat(data.altitude) || 150; // 標高を取得し、失敗した場合はデフォルトで150mを使用
+            console.log('標高値:' + altitude + 'm')
 
             // ScenegraphLayerを再生成して更新
             scenegraphLayer = new deck.ScenegraphLayer({
