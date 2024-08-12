@@ -275,7 +275,7 @@
         data: [{}],
         getPosition: () => {
           const center = map.getCenter().toArray();
-          return [center[0], center[1], 135];
+          return [center[0], center[1], 150];
         },
         getOrientation: [0, -93, 90],
         scenegraph: MODEL_URL,
@@ -301,30 +301,41 @@
       function updateScenegraphLayer() {
         const center = map.getCenter().toArray();
 
-        // ScenegraphLayerを再生成して更新
-        scenegraphLayer = new deck.ScenegraphLayer({
-          id: "scenegraphLayer",
-          data: [{}],
-          getPosition: () => [center[0], center[1], 135],
-          getOrientation: [0, -93, 90],
-          scenegraph: MODEL_URL,
-          sizeScale: 2,
-          _lighting: 'pbr',
-          _animations: {
-            '*': { speed: 1 }
-          },
-          pickable: true,
-          opacity: 1,
-        });
+        // APIから標高データを取得
+        // 【参考】https://blog.geolonia.com/2023/04/14/geoid-api.html
+        fetch(`https://api-vt.geolonia.com/api/altitude?lat=${center[1]}&lng=${center[0]}`)
+          .then(response => response.json())
+          .then(data => {
+            const altitude = parseFloat(data.altitude) || 150; // 標高を取得し、失敗した場合はデフォルトで150mを使用
 
-        // 再生成したレイヤーをセット
-        overlay.setProps({
-          layers: [tile3dLayer, scenegraphLayer]
-        });
+            // ScenegraphLayerを再生成して更新
+            scenegraphLayer = new deck.ScenegraphLayer({
+              id: "scenegraphLayer",
+              data: [{}],
+              getPosition: () => [center[0], center[1], altitude + 30], // 標高+30m
+              getOrientation: [0, -93, 90],
+              scenegraph: MODEL_URL,
+              sizeScale: 2,
+              _lighting: 'pbr',
+              _animations: {
+                '*': { speed: 1 }
+              },
+              pickable: true,
+              opacity: 1,
+            });
+
+            // 再生成したレイヤーをセット
+            overlay.setProps({
+              layers: [tile3dLayer, scenegraphLayer]
+            });
+          })
+          .catch(error => {
+            console.error('標高データの取得に失敗しました:', error);
+          });
       }
 
       // マップが移動した後に ScenegraphLayer を更新
-      map.on('move', () => {
+      map.on('moveend', () => {
         updateScenegraphLayer();
       });
 
