@@ -275,7 +275,7 @@
         data: [{}],
         getPosition: () => {
           const center = map.getCenter().toArray();
-          const altitude = parseFloat(map.transform.elevation) || 150; // 標高値を数値に変換
+          const altitude = parseFloat(map.transform.elevation) || 130; // 標高値を数値に変換
           console.log('経度緯度:', center);
           console.log('標高値:', altitude);
           console.log('ドローンの高さ:', altitude + 30);
