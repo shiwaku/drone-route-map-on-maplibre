@@ -211,16 +211,14 @@
 
       // 全てのソースとレイヤーのロードを待つ
       map.on('idle', () => {
+        const center = map.getCenter().toArray();
+        const altitude = parseFloat(map.transform.elevation) || 150; // 標高値を数値に変換
+
         // ScenegraphLayerの初期化
         scenegraphLayer = new deck.ScenegraphLayer({
           id: "scenegraphLayer",
           data: [{}],
           getPosition: () => {
-            const center = map.getCenter().toArray();
-            const altitude = parseFloat(map.transform.elevation) || 150; // 標高値を数値に変換
-            // console.log('経度緯度:', center);
-            // console.log('標高値:', altitude);
-            // console.log('ドローンの高さ:', altitude + 30);
             return [center[0], center[1], altitude + 30]; // 標高値+30m
           },
           getOrientation: [0, -93, 90],
@@ -239,12 +237,9 @@
           id: 'textLayer',
           data: [{}],
           getPosition: () => {
-            const center = map.getCenter().toArray();
-            const altitude = parseFloat(map.transform.elevation) || 150; // 標高値を数値に変換
             return [center[0], center[1], altitude + 45]; // 標高値+45m (15m高く表示)
           },
           getText: () => {
-            const altitude = parseFloat(map.transform.elevation) || 150;
             return `Altitude+30m: ${(altitude + 30).toFixed(1)}m`;
           },
           getSize: 14,
@@ -268,17 +263,13 @@
         // ScenegraphLayerの更新関数
         function updateScenegraphLayer() {
           const center = map.getCenter().toArray();
+          const altitude = parseFloat(map.transform.elevation) || 150; // 標高値を数値に変換
 
           // ScenegraphLayerを再生成して更新
           scenegraphLayer = new deck.ScenegraphLayer({
             id: "scenegraphLayer",
             data: [{}],
             getPosition: () => {
-              const center = map.getCenter().toArray();
-              const altitude = parseFloat(map.transform.elevation) || 150; // 標高値を数値に変換
-              // console.log('経度緯度:', center);
-              // console.log('標高値:', altitude);
-              // console.log('ドローンの高さ:', altitude + 30);
               return [center[0], center[1], altitude + 30]; // 標高値+30m
             },
             getOrientation: [0, -93, 90],
@@ -297,12 +288,9 @@
             id: 'textLayer',
             data: [{}],
             getPosition: () => {
-              const center = map.getCenter().toArray();
-              const altitude = parseFloat(map.transform.elevation) || 150; // 標高値を数値に変換
               return [center[0], center[1], altitude + 45]; // 標高値+45m (15m高く表示)
             },
             getText: () => {
-              const altitude = parseFloat(map.transform.elevation) || 150;
               return `Altitude+30m: ${(altitude + 30).toFixed(1)}m`;
             },
             getSize: 14,
