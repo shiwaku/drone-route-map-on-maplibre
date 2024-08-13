@@ -99,8 +99,6 @@
 
     const MODEL_URL = "data/dji_tello_1.glb";
 
-    let scenegraphLayer;
-
     // マップをロード
     map.on('load', () => {
       // 標高タイルソース
@@ -173,88 +171,6 @@
         }
       });
 
-      /*
-      // MapboxOverlayを使ったインターリーブ
-      // 点群データ
-      const overlay = new deck.MapboxOverlay({
-        interleaved: true,
-        layers: [
-          new deck.Tile3DLayer({
-            id: "tile3dlayer",
-            pointSize: 1,
-            data: 'https://shiworks.xsrv.jp/3dtiles/shizuoka-pc/sunen-substation/tileset.json',
-            loader: Tiles3DLoader,
-            onTileLoad: d => {
-              const { content } = d;
-              content.cartographicOrigin.z -= 0;
-            }
-          }),
-          new deck.ScenegraphLayer({
-            id: "scenegraphLayer",
-            data: DATA_URL,
-            getPosition: d => {
-              const elevation = 135;
-              return [Number(d.longitude), Number(d.latitude), elevation];
-            },
-            getOrientation: d => [0, -93, 90],
-            scenegraph: MODEL_URL,
-            sizeScale: 5,
-            _lighting: 'pbr',
-            pickable: true,
-            opacity: 1,
-          })
-          new deck.ScenegraphLayer({
-            id: "scenegraphLayer",
-            data: [{}],
-            getPosition: () => {
-              const center = map.getCenter().toArray();
-              const elevation = 135;
-              return [center[0], center[1], elevation];
-            },
-            getOrientation: [0, -93, 90],
-            scenegraph: MODEL_URL,
-            sizeScale: 5,
-            _lighting: 'pbr',
-            pickable: true,
-            opacity: 1,
-          })
-        ],
-        effects: [
-          lightingEffect
-        ],
-      });
-
-      map.addControl(overlay);
-
-      // ScenegraphLayerの更新関数
-      function updateScenegraphLayer() {
-        const scenegraphLayer = new deck.ScenegraphLayer({
-          id: "scenegraphLayer",
-          data: [{}],
-          getPosition: () => {
-            const center = map.getCenter().toArray();
-            const elevation = 135;
-            return [center[0], center[1], elevation];
-          },
-          getOrientation: [0, -93, 90],
-          scenegraph: MODEL_URL,
-          sizeScale: 5,
-          _lighting: 'pbr',
-          pickable: true,
-          opacity: 1,
-        });
-
-        overlay.setProps({
-          layers: [scenegraphLayer]
-        });
-      }
-
-      // マップが移動した後に ScenegraphLayer を更新
-      map.on('moveend', () => {
-        updateScenegraphLayer();
-      });
-      */
-
       // Tile3DLayerの初期化
       const tile3dLayer = new deck.Tile3DLayer({
         id: "tile3dlayer",
@@ -269,111 +185,132 @@
         opacity: 1,
       });
 
-      // ScenegraphLayerの初期化
-      let scenegraphLayer = new deck.ScenegraphLayer({
-        id: "scenegraphLayer",
-        data: [{}],
-        getPosition: () => {
-          const center = map.getCenter().toArray();
-          const altitude = parseFloat(map.transform.elevation) || 130; // 標高値を数値に変換
-          console.log('経度緯度:', center);
-          console.log('標高値:', altitude);
-          console.log('ドローンの高さ:', altitude + 30);
-          return [center[0], center[1], altitude + 30]; // 標高値+30m
-        },
-        getOrientation: [0, -93, 90],
-        scenegraph: MODEL_URL,
-        sizeScale: 2,
-        _animations: {
-          '*': { speed: 10 }
-        },
-        _lighting: 'pbr',
-        pickable: true,
-        opacity: 1,
-      });
-
       // MapboxOverlayの初期化
       const overlay = new deck.MapboxOverlay({
         interleaved: true,
-        layers: [tile3dLayer, scenegraphLayer],
+        layers: [tile3dLayer],
         effects: [lightingEffect],
       });
 
-      map.addControl(overlay);
+      // ScenegraphLayerとTextLayerの変数
+      let scenegraphLayer, textLayer;
 
-      // ScenegraphLayerの更新関数
-      function updateScenegraphLayer() {
-        const center = map.getCenter().toArray();
-
-        /*
-        // 標高APIから標高データを取得
-        // 【参考】https://blog.geolonia.com/2023/04/14/geoid-api.html
-        fetch(`https://api-vt.geolonia.com/api/altitude?lat=${center[1]}&lng=${center[0]}`)
-          .then(response => response.json())
-          .then(data => {
-            const altitude = parseFloat(data.altitude) || 150; // 標高を取得し、失敗した場合はデフォルトで150mを使用
-            console.log('標高値:' + altitude + 'm')
-
-            // ScenegraphLayerを再生成して更新
-            scenegraphLayer = new deck.ScenegraphLayer({
-              id: "scenegraphLayer",
-              data: [{}],
-              getPosition: () => [center[0], center[1], altitude + 30], // 標高+30m
-              getOrientation: [0, -93, 90],
-              scenegraph: MODEL_URL,
-              sizeScale: 2,
-              _lighting: 'pbr',
-              _animations: {
-                '*': { speed: 1 }
-              },
-              pickable: true,
-              opacity: 1,
-            });
-
-            // 再生成したレイヤーをセット
-            overlay.setProps({
-              layers: [tile3dLayer, scenegraphLayer]
-            });
-          })
-          .catch(error => {
-            console.error('標高データの取得に失敗しました:', error);
-          });
-          */
-
-        // ScenegraphLayerを再生成して更新
+      // 全てのソースとレイヤーのロードを待つ
+      map.on('idle', () => {
+        // ScenegraphLayerの初期化
         scenegraphLayer = new deck.ScenegraphLayer({
           id: "scenegraphLayer",
           data: [{}],
-          // getPosition: () => [center[0], center[1], altitude + 30], // 標高+30m
           getPosition: () => {
             const center = map.getCenter().toArray();
             const altitude = parseFloat(map.transform.elevation) || 150; // 標高値を数値に変換
-            console.log('経度緯度:', center);
-            console.log('標高値:', altitude);
-            console.log('ドローンの高さ:', altitude + 30);
+            // console.log('経度緯度:', center);
+            // console.log('標高値:', altitude);
+            // console.log('ドローンの高さ:', altitude + 30);
             return [center[0], center[1], altitude + 30]; // 標高値+30m
           },
           getOrientation: [0, -93, 90],
           scenegraph: MODEL_URL,
           sizeScale: 2,
-          _lighting: 'pbr',
           _animations: {
             '*': { speed: 10 }
           },
+          _lighting: 'pbr',
           pickable: true,
           opacity: 1,
         });
 
-        // 再生成したレイヤーをセット
-        overlay.setProps({
-          layers: [tile3dLayer, scenegraphLayer]
+        // TextLayerの初期化
+        textLayer = new deck.TextLayer({
+          id: 'textLayer',
+          data: [{}],
+          getPosition: () => {
+            const center = map.getCenter().toArray();
+            const altitude = parseFloat(map.transform.elevation) || 150; // 標高値を数値に変換
+            return [center[0], center[1], altitude + 45]; // 標高値+45m (15m高く表示)
+          },
+          getText: () => {
+            const altitude = parseFloat(map.transform.elevation) || 150;
+            return `Altitude+30m: ${(altitude + 30).toFixed(1)}m`;
+          },
+          getSize: 14,
+          getColor: [255, 255, 255, 255],
+          sizeScale: 1,
+          billboard: true,
+          background: true,
+          getBackgroundColor: [0, 0, 0, 128],
+          backgroundPadding: [2, 2],
         });
 
-      }
+        // MapboxOverlayの初期化
+        const overlay = new deck.MapboxOverlay({
+          interleaved: true,
+          layers: [tile3dLayer, scenegraphLayer, textLayer],
+          effects: [lightingEffect],
+        });
 
-      // マップが移動した後に ScenegraphLayer を更新
-      map.on('move', () => {
-        updateScenegraphLayer();
+        map.addControl(overlay);
+
+        // ScenegraphLayerの更新関数
+        function updateScenegraphLayer() {
+          const center = map.getCenter().toArray();
+
+          // ScenegraphLayerを再生成して更新
+          scenegraphLayer = new deck.ScenegraphLayer({
+            id: "scenegraphLayer",
+            data: [{}],
+            getPosition: () => {
+              const center = map.getCenter().toArray();
+              const altitude = parseFloat(map.transform.elevation) || 150; // 標高値を数値に変換
+              // console.log('経度緯度:', center);
+              // console.log('標高値:', altitude);
+              // console.log('ドローンの高さ:', altitude + 30);
+              return [center[0], center[1], altitude + 30]; // 標高値+30m
+            },
+            getOrientation: [0, -93, 90],
+            scenegraph: MODEL_URL,
+            sizeScale: 2,
+            _lighting: 'pbr',
+            _animations: {
+              '*': { speed: 10 }
+            },
+            pickable: true,
+            opacity: 1,
+          });
+
+          // TextLayerを再生成して更新
+          textLayer = new deck.TextLayer({
+            id: 'textLayer',
+            data: [{}],
+            getPosition: () => {
+              const center = map.getCenter().toArray();
+              const altitude = parseFloat(map.transform.elevation) || 150; // 標高値を数値に変換
+              return [center[0], center[1], altitude + 45]; // 標高値+45m (15m高く表示)
+            },
+            getText: () => {
+              const altitude = parseFloat(map.transform.elevation) || 150;
+              return `Altitude+30m: ${(altitude + 30).toFixed(1)}m`;
+            },
+            getSize: 14,
+            getColor: [255, 255, 255, 255],
+            sizeScale: 1,
+            billboard: true,
+            background: true,
+            getBackgroundColor: [0, 0, 0, 128],
+            backgroundPadding: [2, 2],
+          });
+
+          // 再生成したレイヤーをセット
+          overlay.setProps({
+            layers: [tile3dLayer, scenegraphLayer, textLayer]
+          });
+        }
+
+        // マップが移動した後に ScenegraphLayer を更新
+        map.on('move', () => {
+          updateScenegraphLayer();
+        });
+
       });
 
       // Skyレイヤ
@@ -387,7 +324,7 @@
         "atmosphere-blend": ["interpolate", ["linear"], ["zoom"], 0, 1, 12, 0]
       });
 
-    })
+    });
   </script>
 </body>
 
