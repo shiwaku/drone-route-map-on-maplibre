@@ -172,10 +172,24 @@
       });
 
       // Tile3DLayerの初期化
-      const tile3dLayer = new deck.Tile3DLayer({
-        id: "tile3dlayer",
+      const tile3dLayer1 = new deck.Tile3DLayer({
+        id: "tile3dlayer-1",
         pointSize: 1,
         data: 'https://shiworks.xsrv.jp/3dtiles/shizuoka-pc/sunen-substation/tileset.json',
+        loader: Tiles3DLoader,
+        onTileLoad: d => {
+          const { content } = d;
+          content.cartographicOrigin.z -= 0;
+        },
+        _lighting: 'pbr',
+        opacity: 1,
+      });
+
+      // Tile3DLayerの初期化
+      const tile3dLayer2 = new deck.Tile3DLayer({
+        id: "tile3dlayer-2",
+        pointSize: 1,
+        data: 'https://shiworks.xsrv.jp/3dtiles/shizuoka-pc/tenryu-river/tileset.json',
         loader: Tiles3DLoader,
         onTileLoad: d => {
           const { content } = d;
@@ -188,7 +202,7 @@
       // MapboxOverlayの初期化
       const overlay = new deck.MapboxOverlay({
         interleaved: true,
-        layers: [tile3dLayer],
+        layers: [tile3dLayer1, tile3dLayer2],
         effects: [lightingEffect],
       });
 
@@ -245,7 +259,7 @@
         // MapboxOverlayの初期化
         const overlay = new deck.MapboxOverlay({
           interleaved: true,
-          layers: [tile3dLayer, scenegraphLayer, textLayer],
+          layers: [tile3dLayer1, tile3dLayer2, scenegraphLayer, textLayer],
           effects: [lightingEffect],
         });
 
@@ -302,7 +316,7 @@
 
           // 再生成したレイヤーをセット
           overlay.setProps({
-            layers: [tile3dLayer, scenegraphLayer, textLayer]
+            layers: [tile3dLayer1, tile3dLayer2, scenegraphLayer, textLayer]
           });
         }
 
