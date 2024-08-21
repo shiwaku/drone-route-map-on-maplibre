@@ -212,15 +212,16 @@
         "atmosphere-blend": ["interpolate", ["linear"], ["zoom"], 0, 1, 12, 0]
       });
 
-      setTimeout(() => { // map.on('idle'だとレイヤが正常に読み込まれないため、setTimeoutで遅延実行
+      // map.on('idle'...だとレイヤが正常に読み込まれないため、setTimeoutで遅延実行
+      setTimeout(() => {
         // タイルセットが読み込まれるのを待ってから実行
         const center = map.getCenter().toArray();
-        const altitude = parseFloat(map.transform.elevation) || 0; // 標高が取得できない場合は0mとする
+        const elevation = parseFloat(map.transform.elevation) || 0; // 標高が取得できない場合は0mとする
 
         const scenegraphLayer = new deck.ScenegraphLayer({
           id: "scenegraphLayer",
           data: [{}],
-          getPosition: () => [center[0], center[1], altitude + 30],
+          getPosition: () => [center[0], center[1], elevation + 30],
           getOrientation: [0, -93, 90],
           scenegraph: MODEL_URL,
           sizeScale: 2,
@@ -232,11 +233,30 @@
           opacity: 1,
         });
 
+        // 現在のドローンの緯度経度、高さと現在のズームレベルを取得
+        const droneData = {
+          lng: center[0],
+          lat: center[1],
+          altitude: elevation + 30,
+          zoom: Math.floor(map.getZoom())
+        };
+
+        // 空間IDを取得
+        const spatialID = calculateSpatialID(
+          droneData.lng,
+          droneData.lat,
+          droneData.altitude,
+          droneData.zoom
+        );
+
+        // ラベルを作成
+        const label = `${spatialID.z}/${spatialID.f}/${spatialID.x}/${spatialID.y}`;
+
         const textLayer = new deck.TextLayer({
           id: 'textLayer',
           data: [{}],
-          getPosition: () => [center[0], center[1], altitude + 45],
-          getText: () => `elevation+30m: ${(altitude + 30).toFixed(1)}m`,
+          getPosition: () => [center[0], center[1], elevation + 45],
+          getText: () => `elevation+30m: ${(elevation + 30).toFixed(1)}m\nspatialID: ${label}`,
           getSize: 14,
           getColor: [255, 255, 255, 255],
           sizeScale: 1,
@@ -255,17 +275,19 @@
         map.addControl(overlay);
       }, 1000); // 1秒の遅延を入れる
 
+      map.showTileBoundaries = true;
+
     });
 
     // move イベントでレイヤーを更新
     map.on('move', () => {
       const center = map.getCenter().toArray();
-      const altitude = parseFloat(map.transform.elevation) || 0; // 標高が取得できない場合は0mとする
+      const elevation = parseFloat(map.transform.elevation) || 0; // 標高が取得できない場合は0mとする
 
       const newScenegraphLayer = new deck.ScenegraphLayer({
         id: "scenegraphLayer",
         data: [{}],
-        getPosition: () => [center[0], center[1], altitude + 30],
+        getPosition: () => [center[0], center[1], elevation + 30],
         getOrientation: [0, -93, 90],
         scenegraph: MODEL_URL,
         sizeScale: 2,
@@ -277,11 +299,30 @@
         opacity: 1,
       });
 
+      // 現在のドローンの緯度経度、高さと現在のズームレベルを取得
+      const droneData = {
+        lng: center[0],
+        lat: center[1],
+        altitude: elevation + 30,
+        zoom: Math.floor(map.getZoom())
+      };
+
+      // 空間IDを取得
+      const spatialID = calculateSpatialID(
+        droneData.lng,
+        droneData.lat,
+        droneData.altitude,
+        droneData.zoom
+      );
+
+      // ラベルを作成
+      const label = `${spatialID.z}/${spatialID.f}/${spatialID.x}/${spatialID.y}`;
+
       const newTextLayer = new deck.TextLayer({
         id: 'textLayer',
         data: [{}],
-        getPosition: () => [center[0], center[1], altitude + 45],
-        getText: () => `elevation+30m: ${(altitude + 30).toFixed(1)}m`,
+        getPosition: () => [center[0], center[1], elevation + 45],
+        getText: () => `elevation+30m: ${(elevation + 30).toFixed(1)}m\nspatialID: ${label}`,
         getSize: 14,
         getColor: [255, 255, 255, 255],
         sizeScale: 1,
@@ -295,6 +336,33 @@
         layers: [tile3dLayer1, tile3dLayer2, newScenegraphLayer, newTextLayer]
       });
     });
+
+    function calculateSpatialID(lng, lat, altitude, zoom) {
+      // 緯度を度からラジアンに変換
+      const lat_rad = (lat * Math.PI) / 180;
+
+      // n, Z, H を計算
+      const n = Math.pow(2, zoom);
+      const Z = 25; // ボクセルの高さが1mとなるズームレベル
+      const H = Math.pow(2, Z);
+
+      const z = zoom;
+
+      // 標高インデックス（f）を計算
+      const f = Math.floor((n * altitude) / H);
+
+      // x座標インデックス（x）を計算
+      const x = Math.floor(n * ((lng + 180) / 360));
+
+      // y座標インデックス（y）を計算
+      const y = Math.floor(
+        (n / 2) *
+        (1 - Math.log(Math.tan(lat_rad) + 1 / Math.cos(lat_rad)) / Math.PI)
+      );
+
+      // 空間IDをオブジェクトとして返す
+      return { z, f, x, y };
+    }
   </script>
 </body>
 
