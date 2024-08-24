@@ -97,6 +97,7 @@
     // ライティングエフェクトを作成
     const lightingEffect = new deck.LightingEffect({ ambientLight });
 
+    // 3Dモデル
     const MODEL_URL = "data/dji_tello_1.glb";
 
     let overlay, tile3dLayer1, tile3dLayer2;
@@ -337,6 +338,7 @@
       });
     });
 
+    // 空間IDを取得する関数
     function calculateSpatialID(lng, lat, altitude, zoom) {
       // 緯度を度からラジアンに変換
       const lat_rad = (lat * Math.PI) / 180;
