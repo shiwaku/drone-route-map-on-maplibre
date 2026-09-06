@@ -110,7 +110,7 @@
       map.addSource("gsidem-terrain-rgb", {
         type: 'raster-dem',
         tiles: [
-          'https://xs489works.xsrv.jp/raster-tiles/gsi/gsi-dem-terrain-rgb/{z}/{x}/{y}.png',
+          'https://shi-works.com/raster-tiles/gsi/gsi-dem-terrain-rgb/{z}/{x}/{y}.png',
         ],
         maxzoom: 14,
         attribution: '<a href="https://maps.gsi.go.jp/development/ichiran.html#dem" target="_blank">地理院タイル(標高タイル)</a>',
@@ -181,7 +181,7 @@
       tile3dLayer1 = new deck.Tile3DLayer({
         id: "tile3dlayer-1",
         pointSize: 1,
-        data: 'https://shiworks.xsrv.jp/3dtiles/shizuoka-pc/sunen-substation/tileset.json',
+        data: 'https://shi-works.com/3dtiles/shizuoka-pc/sunen-substation/tileset.json',
         loader: Tiles3DLoader,
         onTileLoad: d => {
           const { content } = d;
@@ -195,7 +195,7 @@
       tile3dLayer2 = new deck.Tile3DLayer({
         id: "tile3dlayer-2",
         pointSize: 1,
-        data: 'https://shiworks.xsrv.jp/3dtiles/shizuoka-pc/tenryu-river/tileset.json',
+        data: 'https://shi-works.com/3dtiles/shizuoka-pc/tenryu-river/tileset.json',
         loader: Tiles3DLoader,
         onTileLoad: d => {
           const { content } = d;
